@@ -47,14 +47,14 @@ def getFunction(eq):
     if '>=' in eq:
         maior_igual = eq.index('>=')
         del eq[maior_igual]
-        eq = [float(i)*-1 for i in eq] # 'convertendo' para '>='
+        eq = [float(i)*-1 for i in eq]                      #   'convertendo' para '>='
         return eq
-    if '<=' in eq:  # condiçao que esperamos
+    if '<=' in eq:                                          #   condiçao que esperamos
         menor_igual = eq.index('<=')
         del eq[menor_igual]
         eq = [float(i) for i in eq]
         return eq
-    if '=' in eq:     # feito para a equacao Z
+    if '=' in eq:                                           #   feito para a equacao Z
         igual = eq.index('=')
         del eq[igual]
         eq = [float(i) for i in eq]
@@ -123,26 +123,24 @@ def solution(matrix, dictionary):
     return(dictionary)
 
 
-
-
 if __name__ == "__main__":
-    dictionary = {}
+    dictionary = {}                                         #   Cria dicionario que vai conter as respostas
     row_column = 3
-    matrix = init_matrix(row_column)
+    matrix = init_matrix(row_column)                        #   Cria uma matriz (preenchidas com zero)
     size = len(matrix[:,0])
     qtdFolga = 0
     qtdInitVariables = 0
     
     z_equation = '-3,-5,=,0'                                #   equação após passar tudo para apenas um lado
-    conditions = ['1,0,<=,4','0,2,<=,12', '3,2,<=,18']      #   inequaçoes passadas como
+    conditions = ['1,0,<=,4','0,2,<=,12', '3,2,<=,18']      #   inequaçoes passadas como condicoes
     
     for func in conditions:
-        addCondition(matrix, size, func)
+        addCondition(matrix, size, func)                    #   adiciona as condicoes a matriz criada no inicio
 
 
     while qtdFolga < len(conditions):
-        matrix = addFolga(matrix, size, qtdFolga)
-        qtdFolga += 1
+        matrix = addFolga(matrix, size, qtdFolga)           #   adiciona as variavies de folga (1 para cada inequacao)
+        qtdFolga += 1                                       #   contador da qtd de variais de folgas (caso necessario)
 
     matrix = add_Z_row(matrix,z_equation,qtdFolga)
 
@@ -150,15 +148,15 @@ if __name__ == "__main__":
 
 
     while z_has_negative(matrix):
-        columnPivo = getColumnPivoZ(matrix)             #   coluna a ser escolhida
-        rowPivo = getRowPivo(matrix[1:], columnPivo)    #   linha a ser escolhida
-        pivotValue = matrix[rowPivo][columnPivo]        #   valor do pivo escolhido
-        divideRow(pivotValue, rowPivo, matrix )         #   divide a propria linha pelo valor do Pivo
-        othercolunszero(matrix, rowPivo, columnPivo)    #   zera as outras linhas da coluna do pivo
+        columnPivo = getColumnPivoZ(matrix)                 #   coluna a ser escolhida
+        rowPivo = getRowPivo(matrix[1:], columnPivo)        #   linha a ser escolhida
+        pivotValue = matrix[rowPivo][columnPivo]            #   valor do pivo escolhido
+        divideRow(pivotValue, rowPivo, matrix )             #   divide a propria linha pelo valor do Pivo
+        othercolunszero(matrix, rowPivo, columnPivo)        #   zera as outras linhas da coluna do pivo
 
     print(matrix)
     print()
 
-    dictionary['z'] = matrix[0][-1]
-    dictionary = solution(matrix,dictionary)
-    print(dictionary)
+    dictionary['z'] = matrix[0][-1]                         #   adiciona o valor de z ao dicionario
+    dictionary = solution(matrix,dictionary)                #   adiciona o valores das outras variaveis ao dicionario
+    print(dictionary)                                       #   imprime a resposta
