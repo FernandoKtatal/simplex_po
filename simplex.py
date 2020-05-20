@@ -123,7 +123,7 @@ def solution(matrix, dictionary):
     return(dictionary)
 
 
-if __name__ == "__main__":
+def minZ(z_equation, conditions):
     dictionary = {}                                         #   Cria dicionario que vai conter as respostas
     row_column = 3
     matrix = init_matrix(row_column)                        #   Cria uma matriz (preenchidas com zero)
@@ -146,7 +146,6 @@ if __name__ == "__main__":
 
     initalTablo = matrix
 
-
     while z_has_negative(matrix):
         columnPivo = getColumnPivoZ(matrix)                 #   coluna a ser escolhida
         rowPivo = getRowPivo(matrix[1:], columnPivo)        #   linha a ser escolhida
@@ -160,3 +159,16 @@ if __name__ == "__main__":
     dictionary['z'] = matrix[0][-1]                         #   adiciona o valor de z ao dicionario
     dictionary = solution(matrix,dictionary)                #   adiciona o valores das outras variaveis ao dicionario
     print(dictionary)                                       #   imprime a resposta
+
+
+
+
+
+
+
+if __name__ == "__main__":
+        
+    z_equation = '-3,-5,=,0'                                #   equação após passar tudo para apenas um lado
+    conditions = ['1,0,<=,4','0,2,<=,12', '3,2,<=,18']      #   inequaçoes passadas como condicoes
+    
+    minZ(z_equation, conditions)
