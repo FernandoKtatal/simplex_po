@@ -1,8 +1,8 @@
 import numpy as np
 
 
-def init_matrix(x):
-    zero_matrix = np.zeros((x,x))
+def init_matrix(r,c):
+    zero_matrix = np.zeros((r,c))
     return zero_matrix
 
 def add_Z_row(matrix, z_equation, qtdFolga):
@@ -11,22 +11,37 @@ def add_Z_row(matrix, z_equation, qtdFolga):
     
     while i < qtdFolga:
         z_equation = np.append(z_equation, float(0))
-        setResult_to_end(z_equation)
+        setResult_to_end(z_equation, False)
         i+=1
 
     matrix = (np.r_[ [z_equation], matrix ])
     return matrix
 
-def setResult_to_end(item):
-    aux = item[-2]
-    item[-2] = item[-1]
-    item[-1] = aux
+def setFirstRow_to_end(matrix):
+    aux = matrix[:,0]
+    matrix = np.delete(matrix, 0, axis=1)
+    matrix = np.c_[matrix, aux]
+    return(matrix)
 
-def addFolga(matrix, rows, index):
+def setLast_to_top(matrix):
+    aux = matrix[-1,:]
+    matrix = np.delete(matrix, -1, 0)
+ 
+    
+    return np.vstack([aux,matrix])
+
+
+def setResult_to_end(item, notEntireMaxtrix):
+    if notEntireMaxtrix:
+        aux = item[-2]
+        item[-2] = item[-1]
+        item[-1] = aux
+
+def addFolga(matrix, rows, index, notEntireMaxtrix):
     matrix = np.c_[matrix, np.eye(rows)[index]]
     
     for item in matrix:
-        setResult_to_end(item)
+        setResult_to_end(item, notEntireMaxtrix)
 
     return matrix
 
@@ -47,7 +62,8 @@ def getFunction(eq):
     if '>=' in eq:
         maior_igual = eq.index('>=')
         del eq[maior_igual]
-        eq = [float(i)*-1 for i in eq]                      #   'convertendo' para '>='
+        eq = [float(i) for i in eq]                         #   'convertendo' para '>='
+        eq[-1] = eq[-1]*-1
         return eq
     if '<=' in eq:                                          #   condiçao que esperamos
         menor_igual = eq.index('<=')
@@ -61,11 +77,14 @@ def getFunction(eq):
         return eq
 
 def z_has_negative(matrix):
-    for item in matrix[0]:
-        if item < 0:
-            return True
-        else:
-            return False
+    size = 0
+    found = False
+    while size < len(matrix[0]):
+        if matrix[0][size] < 0: 
+            found = True
+        size+=1
+
+    return found
     
 def getColumnPivoZ(matrix):
     index = 0
@@ -123,27 +142,26 @@ def solution(matrix, dictionary):
     return(dictionary)
 
 
-def minZ(z_equation, conditions):
+def maxZ(z_equation, conditions):
     dictionary = {}                                         #   Cria dicionario que vai conter as respostas
-    row_column = 3
-    matrix = init_matrix(row_column)                        #   Cria uma matriz (preenchidas com zero)
+    row = len(conditions)
+    column = len(conditions[0].split(','))-1
+    matrix = init_matrix(row,column)                        #   Cria uma matriz (preenchidas com zero)
     size = len(matrix[:,0])
     qtdFolga = 0
     qtdInitVariables = 0
     
-    z_equation = '-3,-5,=,0'                                #   equação após passar tudo para apenas um lado
-    conditions = ['1,0,<=,4','0,2,<=,12', '3,2,<=,18']      #   inequaçoes passadas como condicoes
     
     for func in conditions:
         addCondition(matrix, size, func)                    #   adiciona as condicoes a matriz criada no inicio
 
 
     while qtdFolga < len(conditions):
-        matrix = addFolga(matrix, size, qtdFolga)           #   adiciona as variavies de folga (1 para cada inequacao)
+        matrix = addFolga(matrix, size, qtdFolga, True)           #   adiciona as variavies de folga (1 para cada inequacao)
         qtdFolga += 1                                       #   contador da qtd de variais de folgas (caso necessario)
 
     matrix = add_Z_row(matrix,z_equation,qtdFolga)
-
+    print(matrix)
     initalTablo = matrix
 
     while z_has_negative(matrix):
@@ -162,13 +180,62 @@ def minZ(z_equation, conditions):
 
 
 
+def minZ(z_equation, conditions):
+    dictionary = {}                                         #   Cria dicionario que vai conter as respostas
+    row = len(conditions)
+    column = len(conditions[0].split(','))-1
+    matrix = init_matrix(row,column)                        #   Cria uma matriz (preenchidas com zero)
+    qtdFolga = 0
+    qtdInitVariables = 0
 
 
+    for func in conditions:
+        addCondition(matrix, row, func)
 
+    matrix = add_Z_row(matrix,z_equation,0)
+
+    matrix = np.transpose(matrix)
+
+    size = len(matrix[:,0])
+
+    while qtdFolga < size:
+        matrix = addFolga(matrix, size, qtdFolga, False)           #   adiciona as variavies de folga (1 para cada inequacao)
+        qtdFolga += 1
+
+ 
+    matrix = setFirstRow_to_end(matrix)
+
+
+    matrix = setLast_to_top(matrix)
+
+    while z_has_negative(matrix):
+        columnPivo = getColumnPivoZ(matrix)                 #   coluna a ser escolhida
+        rowPivo = getRowPivo(matrix[1:], columnPivo)        #   linha a ser escolhida
+        pivotValue = matrix[rowPivo][columnPivo]            #   valor do pivo escolhido
+        divideRow(pivotValue, rowPivo, matrix )             #   divide a propria linha pelo valor do Pivo
+        othercolunszero(matrix, rowPivo, columnPivo)        #   zera as outras linhas da coluna do pivo
+        
+
+    dictionary['z'] = matrix[0][-1]                         #   adiciona o valor de z ao dicionario
+    
+    count = 0
+    while count < qtdFolga-1:
+        dictionary['x'+str(count+1)] = (matrix[0][row+count])
+        count += 1
+
+    print(matrix)
+    print()
+    print(dictionary)
 
 if __name__ == "__main__":
         
-    z_equation = '-3,-5,=,0'                                #   equação após passar tudo para apenas um lado
-    conditions = ['1,0,<=,4','0,2,<=,12', '3,2,<=,18']      #   inequaçoes passadas como condicoes
-    
+    # z_equation = '-3,-5,=,0'                                #   equação após passar tudo para apenas um lado
+    # conditions = ['1,0,<=,4','0,2,<=,12', '3,2,<=,18']      #   inequaçoes passadas como condicoes
+    # maxZ(z_equation, conditions)
+
+    z_equation = '3,9,=,0'                               
+    conditions = ['2,1,>=,8','1,2,>=,8']
     minZ(z_equation, conditions)
+
+
+
